@@ -11,6 +11,9 @@ REQUIREMENT SPECIFICATION
  jumper wires
  220 ohm resistors.
 
+Video Link :
+https://drive.google.com/file/d/1b58fCUWVnl0fpfNLUMQ6S06GD0XfiicW/view?usp=sharing
+
 
 
 Arduino is the main part of this project and it will be used to read from
