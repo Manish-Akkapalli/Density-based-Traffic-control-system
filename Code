@@ -1,0 +1,156 @@
+#include&lt;TimerOne.h&gt;
+int signal1[] = {7,6,3};
+int signal2[] = {11, A0, 13};
+int signal3[] = {A4, A5, A3};
+//int signal4[] = {10, 9, 8};
+int redDelay = 3000;
+int yellowDelay = 1000;
+volatile int triggerpin1 = 5;
+volatile int echopin1 = 4;
+volatile int triggerpin2 = 10;
+volatile int echopin2 = 9;
+volatile int triggerpin3 = 8;
+volatile int echopin3 = 2;
+
+volatile long time; // Variable for storing the time traveled
+volatile int S1, S2, S3; // Variables for storing the distance covered
+int t = 5; // distance under which it will look for vehicles.
+void softInterr()
+{
+// Reading from first ultrasonic sensor
+digitalWrite(triggerpin1, LOW);
+delayMicroseconds(2);
+digitalWrite(triggerpin1, HIGH);
+delayMicroseconds(10);
+digitalWrite(triggerpin1, LOW);
+time = pulseIn(echopin1, HIGH);
+S1= time*0.034/2;
+// Reading from second ultrasonic sensor
+digitalWrite(triggerpin2, LOW);
+delayMicroseconds(2);
+digitalWrite(triggerpin2, HIGH);
+delayMicroseconds(10);
+digitalWrite(triggerpin2, LOW);
+time = pulseIn(echopin2, HIGH);
+S2= time*0.034/2;
+// Reading from third ultrasonic sensor
+digitalWrite(triggerpin3, LOW);
+delayMicroseconds(2);
+digitalWrite(triggerpin3, HIGH);
+delayMicroseconds(10);
+digitalWrite(triggerpin3, LOW);
+time = pulseIn(echopin3, HIGH);
+S3= time*0.034/2;
+
+// Print distance values on serial monitor for debugging
+Serial.print(&quot;S1: &quot;);
+Serial.print(S1);
+Serial.print(&quot; S2: &quot;);
+Serial.print(S2);
+Serial.print(&quot; S3: &quot;);
+Serial.print(S3);
+}
+void setup(){
+Serial.begin(9600);
+Timer1.initialize(100000); //Begin using the timer. This function must be called
+first. &quot;microseconds&quot; is the period of time the timer takes.
+Timer1.attachInterrupt(softInterr); //Run a function each time the timer period
+finishes.
+// Declaring LED pins as output
+for(int i=0; i&lt;3; i++){
+pinMode(signal1[i], OUTPUT);
+pinMode(signal2[i], OUTPUT);
+pinMode(signal3[i], OUTPUT);
+}
+// Declaring ultrasonic sensor pins as output
+pinMode(triggerpin1, OUTPUT);
+pinMode(echopin1, INPUT);
+pinMode(triggerpin2, OUTPUT);
+pinMode(echopin2, INPUT);
+pinMode(triggerpin3, OUTPUT);
+pinMode(echopin3, INPUT);
+}
+void low()
+{
+for(int i=1; i&lt;3; i++)
+{
+digitalWrite(signal1[i], LOW);
+
+digitalWrite(signal2[i], LOW);
+digitalWrite(signal3[i], LOW);
+}
+for(int i=0; i&lt;1; i++)
+{
+digitalWrite(signal1[i], HIGH);
+digitalWrite(signal2[i], HIGH);
+digitalWrite(signal3[i], HIGH);
+}
+}
+
+// This is interrupt function and it will run each time the timer period finishes. The timer period is set at 100 milli seconds.
+
+void signal1Function()
+{
+Serial.println(&quot;1&quot;);
+low();
+// Make RED LED LOW and make Green HIGH for 5 seconds
+digitalWrite(signal1[0], LOW);
+digitalWrite(signal1[2], HIGH);
+delay(redDelay);
+// if there are vehicels at other signals
+if(S2&lt;t || S3&lt;t )
+{
+// Make Green LED LOW and make yellow LED HIGH for 2 seconds
+digitalWrite(signal1[2], LOW);
+digitalWrite(signal1[1], HIGH);
+delay(yellowDelay);
+}
+}
+
+void signal2Function()
+{
+Serial.println(&quot;2&quot;);
+low();
+digitalWrite(signal2[0], LOW);
+digitalWrite(signal2[2], HIGH);
+delay(redDelay);
+if(S1&lt;t || S3&lt;t )
+{
+digitalWrite(signal2[2], LOW);
+digitalWrite(signal2[1], HIGH);
+delay(yellowDelay);
+}
+}
+void signal3Function()
+{
+Serial.println(&quot;3&quot;);
+low();
+digitalWrite(signal3[0], LOW);
+digitalWrite(signal3[2], HIGH);
+delay(redDelay);
+if(S1&lt;t || S2&lt;t )
+{
+digitalWrite(signal3[2], LOW);
+digitalWrite(signal3[1], HIGH);
+delay(yellowDelay);
+}
+}
+void loop()
+{
+// If there are vehicles at signal 1
+if(S1&lt;t)
+
+{
+signal1Function();
+}
+// If there are vehicles at signal 2
+if(S2&lt;t)
+{
+signal2Function();
+}
+// If there are vehicles at signal 3
+if(S3&lt;t)
+{
+signal3Function();
+}
+}
